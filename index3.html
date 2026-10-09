@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomok elektronszerkezete - Cellás ábrázolás gyakorló</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .atom-info {
+            background-color: #e8f6f3;
+            border-left: 5px solid #1abc9c;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .atom-info .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .atom-info .info-item span {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #16a085;
+        }
+        .hint-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hint-btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .hint-btn:hover {
+            background-color: #e67e22;
+        }
+        .hint-display {
+            font-family: 'Courier New', monospace;
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #bdc3c7;
+            letter-spacing: 1px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 150px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .hint-display.visible {
+            opacity: 1;
+        }
+        .shell-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .shell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .shell-label {
+            font-weight: bold;
+            min-width: 80px;
+            color: #34495e;
+        }
+        .subshell-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subshell-label {
+            font-weight: bold;
+            color: #7f8c8d;
+            min-width: 30px;
+            font-family: 'Courier New', monospace;
+        }
+        .cells {
+            display: flex;
+            gap: 8px;
+        }
+        .cell {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: #fff;
+            transition: all 0.2s;
+            font-size: 1.2em;
+            user-select: none;
+            position: relative;
+            line-height: 1;
+        }
+        .cell:hover {
+            border-color: #3498db;
+            background-color: #ecf0f1;
+        }
+        .cell.correct {
+            border-color: #27ae60;
+            background-color: #eafaf1;
+        }
+        .cell.incorrect {
+            border-color: #e74c3c;
+            background-color: #fdedec;
+        }
+        .arrow-up {
+            color: #2980b9;
+        }
+        .arrow-down {
+            color: #c0392b;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+        .message.success {
+            color: #27ae60;
+        }
+        .message.error {
+            color: #c0392b;
+        }
+        .score-board {
+            text-align: right;
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+            flex-wrap: wrap;
+        }
+        .legend span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend .arrow-up, .legend .arrow-down { font-size: 1.2em; }
+        
+        @media (max-width: 600px) {
+            .shell {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .cell {
+                width: 38px;
+                height: 38px;
+                font-size: 1em;
+            }
+            .atom-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Atomok elektronszerkezete</h1>
+    <div class="subtitle">Cellás ábrázolás gyakorlása (Pauli-elv, Hund-szabály, Energiaminimum)</div>
+    
+    <div class="score-board">
+        Pontszám: <span id="score">0</span>
+    </div>
+
+    <div class="atom-info">
+        <div class="info-item">Vegyjel: <span id="element-symbol">H</span></div>
+        <div class="info-item">Rendszám: <span id="atomic-number">1</span></div>
+        <div class="hint-container">
+            <button class="hint-btn" id="btn-hint" onclick="toggleHint()">Tipp kérése</button>
+            <div class="hint-display" id="electron-config"></div>
+        </div>
+    </div>
+
+    <div class="shell-container" id="shell-container">
+        <!-- Shells will be generated here -->
+    </div>
+
+    <div class="legend">
+        <span><span class="arrow-up">↑</span> felfelé mutató spin (+1/2)</span>
+        <span><span class="arrow-down">↓</span> lefelé mutató spin (-1/2)</span>
+        <span>Kattints a cellára a nyilak cseréjéhez</span>
+    </div>
+
+    <div class="controls">
+        <button class="btn-primary" id="btn-new" onclick="generateNewAtom()">Új atom generálása</button>
+        <button class="btn-success" id="btn-check" onclick="checkAnswer()">Ellenőrzés</button>
+        <button class="btn-warning" id="btn-show" onclick="showSolution()">Megoldás mutatása</button>
+    </div>
+
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+    // Adatok a tankönyv 19. oldala alapján
+    const elements = [
+        { symbol: 'H', number: 1, config: '1s¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 1 }] }] },
+        { symbol: 'He', number: 2, config: '1s²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }] },
+        { symbol: 'Li', number: 3, config: '1s² 2s¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 1 }] }] },
+        { symbol: 'Be', number: 4, config: '1s² 2s²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }] }] },
+        { symbol: 'B', number: 5, config: '1s² 2s² 2p¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 1 }] }] },
+        { symbol: 'C', number: 6, config: '1s² 2s² 2p²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 2 }] }] },
+        { symbol: 'N', number: 7, config: '1s² 2s² 2p³', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 3 }] }] },
+        { symbol: 'O', number: 8, config: '1s² 2s² 2p⁴', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 4 }] }] },
+        { symbol: 'F', number: 9, config: '1s² 2s² 2p⁵', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 5 }] }] },
+        { symbol: 'Ne', number: 10, config: '1s² 2s² 2p⁶', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }] },
+        { symbol: 'Na', number: 11, config: '1s² 2s² 2p⁶ 3s¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 1 }] }] },
+        { symbol: 'Mg', number: 12, config: '1s² 2s² 2p⁶ 3s²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }] }] },
+        { symbol: 'Al', number: 13, config: '1s² 2s² 2p⁶ 3s² 3p¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 1 }] }] },
+        { symbol: 'Si', number: 14, config: '1s² 2s² 2p⁶ 3s² 3p²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 2 }] }] },
+        { symbol: 'P', number: 15, config: '1s² 2s² 2p⁶ 3s² 3p³', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 3 }] }] },
+        { symbol: 'S', number: 16, config: '1s² 2s² 2p⁶ 3s² 3p⁴', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 4 }] }] },
+        { symbol: 'Cl', number: 17, config: '1s² 2s² 2p⁶ 3s² 3p⁵', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 5 }] }] },
+        { symbol: 'Ar', number: 18, config: '1s² 2s² 2p⁶ 3s² 3p⁶', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 6 }] }] },
+        { symbol: 'K', number: 19, config: '[Ar] 4s¹', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 6 }] }, { name: 'N', subshells: [{ name: '4s', electrons: 1 }] }] },
+        { symbol: 'Ca', number: 20, config: '[Ar] 4s²', shells: [{ name: 'K', subshells: [{ name: '1s', electrons: 2 }] }, { name: 'L', subshells: [{ name: '2s', electrons: 2 }, { name: '2p', electrons: 6 }] }, { name: 'M', subshells: [{ name: '3s', electrons: 2 }, { name: '3p', electrons: 6 }] }, { name: 'N', subshells: [{ name: '4s', electrons: 2 }] }] }
+    ];
+
+    let currentElement = null;
+    let score = 0;
+    let cellStates = []; // Tárolja a cellák állapotát: 0 = üres, 1 = fel, 2 = mindkettő, 3 = le
+    let hintVisible = false;
+
+    // Segédfüggvény a cellák számának meghatározásához
+    function getCellCount(subshellName) {
+        if (subshellName.endsWith('s')) return 1;
+        if (subshellName.endsWith('p')) return 3;
+        if (subshellName.endsWith('d')) return 5;
+        if (subshellName.endsWith('f')) return 7;
+        return 0;
+    }
+
+    // Inicializálás
+    function init() {
+        generateNewAtom();
+    }
+
+    // Új atom generálása
+    function generateNewAtom() {
+        // Véletlenszerű atom kiválasztása
+        const randomIndex = Math.floor(Math.random() * elements.length);
+        currentElement = elements[randomIndex];
+        
+        // UI frissítése
+        document.getElementById('element-symbol').textContent = currentElement.symbol;
+        document.getElementById('atomic-number').textContent = currentElement.number;
+        
+        // Tipp elrejtése
+        hintVisible = false;
+        const hintDisplay = document.getElementById('electron-config');
+        hintDisplay.textContent = '';
+        hintDisplay.classList.remove('visible');
+        document.getElementById('btn-hint').textContent = 'Tipp kérése';
+        
+        // Cellák generálása
+        const container = document.getElementById('shell-container');
+        container.innerHTML = '';
+        cellStates = [];
+
+        currentElement.shells.forEach((shell, shellIndex) => {
+            const shellDiv = document.createElement('div');
+            shellDiv.className = 'shell';
+            
+            const label = document.createElement('div');
+            label.className = 'shell-label';
+            label.textContent = shell.name;
+            shellDiv.appendChild(label);
+
+            shell.subshells.forEach(subshell => {
+                const subshellGroup = document.createElement('div');
+                subshellGroup.className = 'subshell-group';
+                
+                const subLabel = document.createElement('div');
+                subLabel.className = 'subshell-label';
+                subLabel.textContent = subshell.name;
+                subshellGroup.appendChild(subLabel);
+
+                const cellsDiv = document.createElement('div');
+                cellsDiv.className = 'cells';
+                
+                const totalCells = getCellCount(subshell.name);
+                
+                for (let i = 0; i < totalCells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.shellIndex = shellIndex;
+                    cell.dataset.subshellName = subshell.name;
+                    cell.dataset.cellIndex = i;
+                    
+                    // Alapértelmezett állapot: üres
+                    cellStates.push(0); // 0 = üres
+                    
+                    cell.onclick = () => cycleCell(cell);
+                    
+                    cellsDiv.appendChild(cell);
+                }
+                
+                subshellGroup.appendChild(cellsDiv);
+                shellDiv.appendChild(subshellGroup);
+            });
+            
+            container.appendChild(shellDiv);
+        });
+
+        // Üzenet törlése
+        const msg = document.getElementById('message');
+        msg.textContent = '';
+        msg.className = 'message';
+    }
+
+    // Tipp megjelenítése/elrejtése
+    function toggleHint() {
+        hintVisible = !hintVisible;
+        const hintDisplay = document.getElementById('electron-config');
+        const hintBtn = document.getElementById('btn-hint');
+        
+        if (hintVisible) {
+            hintDisplay.textContent = currentElement.config;
+            hintDisplay.classList.add('visible');
+            hintBtn.textContent = 'Tipp elrejtése';
+        } else {
+            hintDisplay.textContent = '';
+            hintDisplay.classList.remove('visible');
+            hintBtn.textContent = 'Tipp kérése';
+        }
+    }
+
+    // Cellák állapotának ciklizálása: üres -> fel -> mindkettő -> le -> üres
+    function cycleCell(cell) {
+        const shellIndex = parseInt(cell.dataset.shellIndex);
+        const subshellName = cell.dataset.subshellName;
+        const cellIndex = parseInt(cell.dataset.cellIndex);
+        
+        // Megkeressük a cella indexét a cellStates tömbben
+        let offset = 0;
+        for (let s = 0; s < shellIndex; s++) {
+            currentElement.shells[s].subshells.forEach(sub => {
+                offset += getCellCount(sub.name);
+            });
+        }
+        // A subshell-en belüli eltolás
+        let subOffset = 0;
+        for (let sub of currentElement.shells[shellIndex].subshells) {
+            if (sub.name === subshellName) break;
+            subOffset += getCellCount(sub.name);
+        }
+        
+        const globalIndex = offset + subOffset + cellIndex;
+        
+        // Ciklizálás: 0 -> 1 -> 2 -> 3 -> 0
+        cellStates[globalIndex] = (cellStates[globalIndex] + 1) % 4;
+        
+        // UI frissítése
+        updateCellDisplay(cell, cellStates[globalIndex]);
+        
+        // Ha már volt ellenőrzés, töröljük a színezést
+        cell.classList.remove('correct', 'incorrect');
+    }
+
+    // Cella megjelenítésének frissítése az állapot alapján
+    function updateCellDisplay(cell, state) {
+        if (state === 0) {
+            cell.innerHTML = '';
+        } else if (state === 1) {
+            cell.innerHTML = '<span class="arrow-up">↑</span>';
+        } else if (state === 2) {
+            // Két nyíl egymás mellett
+            cell.innerHTML = '<span class="arrow-up">↑</span><span class="arrow-down">↓</span>';
+        } else if (state === 3) {
+            cell.innerHTML = '<span class="arrow-down">↓</span>';
+        }
+    }
+
+    // Ellenőrzés
+    function checkAnswer() {
+        let isCorrect = true;
+        const cells = document.querySelectorAll('.cell');
+        
+        // Először kiszámoljuk a helyes állapotokat
+        let correctStates = [];
+        
+        currentElement.shells.forEach(shell => {
+            shell.subshells.forEach(subshell => {
+                const totalCells = getCellCount(subshell.name);
+                const electrons = subshell.electrons;
+                
+                // Hund-szabály és Pauli-elv alkalmazása
+                // 0 = üres, 1 = egy felfelé nyíl, 2 = mindkét nyíl (párosított), 3 = egy lefelé nyíl (nem használt a helyes megoldásban)
+                let remaining = electrons;
+                let cellArr = new Array(totalCells).fill(0);
+                
+                // Első kör: minden cellába egy felfelé nyíl
+                for (let i = 0; i < totalCells && remaining > 0; i++) {
+                    cellArr[i] = 1;
+                    remaining--;
+                }
+                
+                // Második kör: párosítás (mindkét nyíl)
+                for (let i = 0; i < totalCells && remaining > 0; i++) {
+                    cellArr[i] = 2;
+                    remaining--;
+                }
+                
+                correctStates = correctStates.concat(cellArr);
+            });
+        });
+
+        // Összehasonlítás
+        cells.forEach((cell, index) => {
+            const userState = cellStates[index];
+            const correctState = correctStates[index];
+            
+            cell.classList.remove('correct', 'incorrect');
+            
+            if (userState === correctState) {
+                cell.classList.add('correct');
+            } else {
+                cell.classList.add('incorrect');
+                isCorrect = false;
+            }
+        });
+
+        const msg = document.getElementById('message');
+        if (isCorrect) {
+            msg.textContent = 'Helyes! Az elektronszerkezet megfelel a szabályoknak.';
+            msg.className = 'message success';
+            score++;
+            document.getElementById('score').textContent = score;
+        } else {
+            msg.textContent = 'Hibás. Nézd meg a pirossal jelölt cellákat!';
+            msg.className = 'message error';
+        }
+    }
+
+    // Megoldás mutatása
+    function showSolution() {
+        const cells = document.querySelectorAll('.cell');
+        
+        // Kiszámoljuk a helyes állapotokat
+        let correctStates = [];
+        
+        currentElement.shells.forEach(shell => {
+            shell.subshells.forEach(subshell => {
+                const totalCells = getCellCount(subshell.name);
+                const electrons = subshell.electrons;
+                
+                let remaining = electrons;
+                let cellArr = new Array(totalCells).fill(0);
+                
+                // Első kör: felfelé nyilak
+                for (let i = 0; i < totalCells && remaining > 0; i++) {
+                    cellArr[i] = 1;
+                    remaining--;
+                }
+                
+                // Második kör: mindkét nyíl
+                for (let i = 0; i < totalCells && remaining > 0; i++) {
+                    cellArr[i] = 2;
+                    remaining--;
+                }
+                
+                correctStates = correctStates.concat(cellArr);
+            });
+        });
+
+        // UI frissítése
+        cells.forEach((cell, index) => {
+            const correctState = correctStates[index];
+            cellStates[index] = correctState;
+            
+            cell.classList.remove('correct', 'incorrect');
+            updateCellDisplay(cell, correctState);
+        });
+
+        const msg = document.getElementById('message');
+        msg.textContent = 'A helyes megoldás megjelenítve.';
+        msg.className = 'message';
+    }
+
+    // Indítás
+    init();
+</script>
+</body>
+</html>
